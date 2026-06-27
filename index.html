@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#1A1A18">
+<meta name="description" content="AioKoa 5 Star Soul Compass — 7 Day Soul Quest by Hirini Reedy">
+<title>AioKoa — 7 Day Soul Compass Quest</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Lora:ital,wght@0,500;1,400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #F7F6F2;
+  --surface: #FFFFFF;
+  --border: rgba(0,0,0,0.09);
+  --border-mid: rgba(0,0,0,0.16);
+  --text: #1A1A18;
+  --text-muted: #6B6B66;
+  --text-hint: #9B9B96;
+  --radius: 14px;
+  --radius-sm: 9px;
+  --font: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-serif: 'Lora', Georgia, serif;
+  --kore: #888780; --kore-bg: #F1EFE8; --kore-dark: #444441;
+  --seer: #7F77DD; --seer-bg: #EEEDFE; --seer-dark: #3C3489;
+  --warrior: #D85A30; --warrior-bg: #FAECE7; --warrior-dark: #712B13;
+  --healer: #1D9E75; --healer-bg: #E1F5EE; --healer-dark: #085041;
+  --provider: #378ADD; --provider-bg: #E6F1FB; --provider-dark: #0C447C;
+  --soul: #639922; --soul-bg: #EAF3DE; --soul-dark: #27500A;
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-top: env(safe-area-inset-top, 0px);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #111110;
+    --surface: #1C1C1A;
+    --border: rgba(255,255,255,0.09);
+    --border-mid: rgba(255,255,255,0.16);
+    --text: #F0EFE9;
+    --text-muted: #9B9B96;
+    --text-hint: #6B6B66;
+    --kore-bg: #2A2926; --seer-bg: #1E1C38;
+    --warrior-bg: #2E1A10; --healer-bg: #0C2820;
+    --provider-bg: #0C1E30; --soul-bg: #162208;
+  }
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+html { height: 100%; }
+body {
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--text);
+  font-size: 16px;
+  line-height: 1.6;
+  min-height: 100%;
+  padding-top: var(--safe-top);
+  padding-bottom: calc(var(--safe-bottom) + 80px);
+}
+
+/* ── Layout ── */
+.app { max-width: 600px; margin: 0 auto; padding: 0 16px; }
+.screen { display: none; }
+.screen.active { display: block; }
+
+/* ── Top bar ── */
+.topbar {
+  position: sticky; top: 0; z-index: 100;
+  background: var(--surface);
+  border-bottom: 0.5px solid var(--border);
+  padding: 12px 16px;
+  display: flex; align-items: center; justify-content: space-between;
+  padding-top: calc(12px + var(--safe-top));
+}
+.topbar-brand { font-family: var(--font-serif); font-size: 17px; font-weight: 500; color: var(--text); }
+.topbar-sub { font-size: 11px; color: var(--text-muted); margin-top: 1px; }
+.topbar-right { display: flex; align-items: center; gap: 10px; }
+
+/* ── Day nav strip ── */
+.day-strip {
+  display: flex; overflow-x: auto; gap: 6px;
+  padding: 12px 16px; background: var(--surface);
+  border-bottom: 0.5px solid var(--border);
+  scrollbar-width: none; -webkit-overflow-scrolling: touch;
+}
+.day-strip::-webkit-scrollbar { display: none; }
+.dp {
+  flex-shrink: 0; width: 54px; padding: 7px 4px;
+  text-align: center; border-radius: var(--radius-sm);
+  border: 0.5px solid var(--border);
+  cursor: pointer; transition: all 0.15s;
+  background: var(--bg);
+}
+.dp .dp-n { font-size: 10px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; color: var(--text-hint); margin-bottom: 3px; }
+.dp .dp-s { font-size: 11px; color: var(--text-muted); line-height: 1.2; }
+.dp.active { background: var(--surface); border-color: var(--accent, #888); }
+.dp.active .dp-n { color: var(--accent, #888); }
+.dp.active .dp-s { color: var(--text); font-weight: 500; }
+.dp.done .dp-n::after { content: ' ✓'; }
+.dp.locked { opacity: 0.35; cursor: not-allowed; }
+
+/* ── Cards ── */
+.card {
+  background: var(--surface); border: 0.5px solid var(--border);
+  border-radius: var(--radius); padding: 16px;
+  margin-bottom: 12px;
+}
+.card-accent { border-left: 3px solid var(--accent, #888); }
+.card h3 {
+  font-size: 11px; font-weight: 600; letter-spacing: 0.07em;
+  text-transform: uppercase; color: var(--text-muted); margin-bottom: 10px;
+}
+.card p { font-size: 15px; color: var(--text-muted); line-height: 1.7; }
+
+/* ── Day hero ── */
+.day-hero {
+  background: var(--accent-bg, #F1EFE8);
+  border-radius: var(--radius);
+  padding: 18px 16px;
+  margin-bottom: 12px;
+  border-left: 4px solid var(--accent, #888);
+}
+.day-hero .dh-badge {
+  display: inline-block; font-size: 10px; font-weight: 600;
+  letter-spacing: 0.08em; text-transform: uppercase;
+  padding: 3px 10px; border-radius: 999px;
+  background: var(--accent, #888); color: #fff; margin-bottom: 8px;
+}
+.day-hero h2 {
+  font-family: var(--font-serif); font-size: 20px; font-weight: 500;
+  color: var(--accent-dark, #444); margin-bottom: 3px; line-height: 1.3;
+}
+.day-hero .dh-sub { font-size: 13px; color: var(--accent-dark, #444); opacity: 0.75; }
+.day-hero .dh-meta {
+  display: flex; align-items: baseline; gap: 8px; margin-top: 12px;
+}
+.day-hero .dh-rating-big { font-size: 38px; font-weight: 600; color: var(--accent, #888); line-height: 1; }
+.day-hero .dh-rating-label { font-size: 12px; color: var(--accent-dark, #444); opacity: 0.7; }
+
+/* ── Breath ── */
+.breath-wrap { text-align: center; padding: 8px 0 4px; }
+.breath-ring {
+  width: 88px; height: 88px; border-radius: 50%;
+  border: 2.5px solid var(--accent, #888);
+  margin: 0 auto 12px; display: flex; align-items: center;
+  justify-content: center; font-size: 12px; font-weight: 600;
+  color: var(--accent, #888); transition: transform 1.2s ease-in-out;
+  letter-spacing: 0.02em;
+}
+.breath-ring.expand { transform: scale(1.4); }
+.breath-phase-label { font-size: 20px; font-weight: 500; color: var(--accent, #888); min-height: 30px; }
+.breath-phase-desc { font-size: 13px; color: var(--text-muted); margin-top: 4px; min-height: 20px; }
+.breath-controls { display: flex; gap: 8px; justify-content: center; margin-top: 14px; }
+
+/* ── Rating buttons ── */
+.rating-grid { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; }
+.rb {
+  width: 40px; height: 40px; border-radius: var(--radius-sm);
+  border: 0.5px solid var(--border-mid); background: var(--bg);
+  font-size: 14px; font-weight: 500; color: var(--text-muted);
+  cursor: pointer; font-family: var(--font);
+  transition: all 0.12s; display: flex; align-items: center; justify-content: center;
+  -webkit-tap-highlight-color: transparent;
+}
+.rb.sel { background: var(--accent, #888); color: #fff; border-color: var(--accent, #888); transform: scale(1.05); }
+.rb:active { transform: scale(0.95); }
+
+/* ── Inputs ── */
+label { font-size: 13px; color: var(--text-muted); display: block; margin-bottom: 6px; line-height: 1.4; }
+input[type="text"], textarea {
+  width: 100%; border: 0.5px solid var(--border-mid);
+  border-radius: var(--radius-sm); padding: 12px 14px;
+  font-size: 15px; background: var(--surface); color: var(--text);
+  font-family: var(--font); line-height: 1.5;
+  -webkit-appearance: none; appearance: none;
+}
+input[type="text"]:focus, textarea:focus { outline: none; border-color: var(--accent, #888); }
+textarea { resize: none; min-height: 100px; }
+.soul-name-input { font-family: var(--font-serif); font-style: italic; font-size: 17px; }
+
+/* ── Buttons ── */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+  padding: 12px 20px; border-radius: var(--radius-sm);
+  border: 0.5px solid var(--border-mid); background: transparent;
+  color: var(--text); font-size: 15px; font-weight: 500;
+  cursor: pointer; font-family: var(--font);
+  transition: all 0.12s; -webkit-tap-highlight-color: transparent;
+  width: 100%; margin-top: 6px;
+}
+.btn:active { transform: scale(0.98); opacity: 0.85; }
+.btn-primary {
+  background: var(--text); color: var(--surface);
+  border-color: transparent; font-size: 16px; padding: 14px;
+}
+.btn-accent { border-color: var(--accent, #888); color: var(--accent, #888); }
+.btn-accent:active { background: var(--accent-bg, #f0f0f0); }
+.btn-done { background: var(--accent-bg, #f0f0f0); color: var(--accent-dark, #444); border-color: var(--accent, #888); opacity: 0.6; cursor: default; }
+
+/* ── AI response ── */
+.ai-box {
+  background: var(--bg); border-radius: var(--radius-sm);
+  padding: 14px; font-family: var(--font-serif);
+  font-style: italic; font-size: 15px; line-height: 1.8;
+  color: var(--text); border-left: 3px solid var(--accent, #888);
+  margin-top: 10px;
+}
+.ai-label {
+  font-family: var(--font); font-style: normal;
+  font-size: 10px; font-weight: 600; letter-spacing: 0.08em;
+  text-transform: uppercase; color: var(--accent, #888);
+  margin-bottom: 6px; display: block;
+}
+.ai-thinking { color: var(--text-muted); font-style: normal; font-size: 14px; }
+
+/* ── Complete pill ── */
+.done-pill {
+  display: flex; align-items: center; gap: 8px;
+  background: var(--accent-bg); color: var(--accent-dark);
+  border: 0.5px solid var(--accent); border-radius: 999px;
+  padding: 8px 16px; font-size: 13px; font-weight: 500;
+  justify-content: center; margin-top: 8px;
+}
+.done-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); flex-shrink: 0; }
+
+/* ── Login screen ── */
+.login-wrap { padding: 48px 0 24px; }
+.login-brand {
+  text-align: center; margin-bottom: 32px;
+}
+.login-brand .lb-title {
+  font-family: var(--font-serif); font-size: 28px; font-weight: 500;
+  color: var(--text); margin-bottom: 4px;
+}
+.login-brand .lb-sub { font-size: 14px; color: var(--text-muted); }
+.login-brand .lb-seed {
+  font-size: 13px; color: var(--text-hint); margin-top: 8px;
+  font-family: var(--font-serif); font-style: italic;
+}
+.field { margin-bottom: 14px; }
+.err { font-size: 13px; color: #D85A30; margin-top: 6px; }
+
+/* ── Summary grid ── */
+.summary-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-bottom: 12px; }
+@media (min-width: 400px) { .summary-grid { grid-template-columns: repeat(3, 1fr); } }
+.sc { background: var(--bg); border-radius: var(--radius-sm); padding: 12px; text-align: center; border: 0.5px solid var(--border); }
+.sc .sc-l { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); margin-bottom: 4px; }
+.sc .sc-v { font-size: 28px; font-weight: 600; line-height: 1; }
+
+/* ── Bar chart ── */
+.bar-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+.bar-label { font-size: 12px; font-weight: 500; width: 80px; flex-shrink: 0; color: var(--text-muted); }
+.bar-track { flex: 1; height: 8px; background: var(--bg); border-radius: 999px; overflow: hidden; border: 0.5px solid var(--border); }
+.bar-fill { height: 100%; border-radius: 999px; transition: width 0.6s ease; }
+.bar-val { font-size: 12px; font-weight: 600; width: 20px; flex-shrink: 0; }
+
+/* ── Rest screen ── */
+.rest-wrap { text-align: center; padding: 56px 20px 40px; }
+.rest-moon { font-size: 52px; opacity: 0.2; margin-bottom: 24px; }
+.rest-title { font-family: var(--font-serif); font-size: 24px; font-weight: 500; margin-bottom: 14px; color: var(--text); }
+.rest-body { font-size: 16px; color: var(--text-muted); line-height: 1.8; max-width: 320px; margin: 0 auto; }
+
+/* ── Quest report ── */
+.report-header { background: var(--text); color: #fff; border-radius: var(--radius); padding: 20px; margin-bottom: 12px; text-align: center; }
+.report-header .rh-eye { font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: rgba(255,255,255,0.4); margin-bottom: 6px; }
+.report-header .rh-name { font-family: var(--font-serif); font-size: 22px; font-weight: 500; color: #fff; }
+.report-header .rh-soul { font-family: var(--font-serif); font-style: italic; font-size: 14px; color: rgba(255,255,255,0.55); margin-top: 4px; }
+.section-rule { font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-hint); font-weight: 600; padding: 6px 0; border-top: 0.5px solid var(--border); border-bottom: 0.5px solid var(--border); margin: 14px 0 12px; }
+.captain-msg { background: var(--bg); border-left: 3px solid var(--soul); border-radius: var(--radius-sm); padding: 14px; font-family: var(--font-serif); font-style: italic; font-size: 15px; line-height: 1.8; color: var(--text); margin-bottom: 12px; }
+.captain-msg .cm-sig { font-style: normal; font-family: var(--font); font-size: 12px; color: var(--text-muted); margin-top: 10px; font-weight: 500; }
+.kaitiaki-block { background: var(--soul-bg); border-radius: var(--radius-sm); padding: 14px; border: 0.5px solid var(--soul); margin-bottom: 12px; }
+.kaitiaki-block h4 { font-size: 11px; font-weight: 600; color: var(--soul-dark); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px; }
+.kaitiaki-block p { font-size: 14px; color: var(--soul-dark); line-height: 1.7; }
+
+/* ── Bottom safe padding ── */
+.bottom-pad { height: calc(40px + var(--safe-bottom)); }
+
+/* ── Divider ── */
+hr { border: none; border-top: 0.5px solid var(--border); margin: 16px 0; }
+
+/* ── API key input ── */
+.api-section { background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--radius); padding: 16px; margin-bottom: 14px; }
+.api-section h3 { font-size: 11px; font-weight: 600; letter-spacing: 0.07em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 8px; }
+.api-section p { font-size: 13px; color: var(--text-muted); line-height: 1.6; margin-bottom: 10px; }
+input[type="password"] { width: 100%; border: 0.5px solid var(--border-mid); border-radius: var(--radius-sm); padding: 12px 14px; font-size: 15px; background: var(--surface); color: var(--text); font-family: var(--font); -webkit-appearance: none; }
+input[type="password"]:focus { outline: none; border-color: var(--seer); }
+</style>
+</head>
+<body>
+
+<!-- LOGIN SCREEN -->
+<div id="screen-login" class="screen active">
+  <div class="app">
+    <div class="login-wrap">
+      <div class="login-brand">
+        <div class="lb-title">AioKoa</div>
+        <div class="lb-sub">5 Star Soul Compass Quest</div>
+        <div class="lb-seed">Sleeping Seed · Wild Flower</div>
+      </div>
+
+      <div class="api-section">
+        <h3>AI Sensei API Key</h3>
+        <p>Enter your Anthropic API key to activate AI Sensei. This is stored only on your device.</p>
+        <input type="password" id="api-key-input" placeholder="sk-ant-..." autocomplete="off" />
+      </div>
+
+      <div class="card">
+        <div class="field">
+          <label for="fn">First name</label>
+          <input type="text" id="fn" placeholder="Your first name" autocomplete="given-name" />
+        </div>
+        <div class="field">
+          <label for="ln">Last name</label>
+          <input type="text" id="ln" placeholder="Your last name" autocomplete="family-name" />
+        </div>
+        <div id="login-err" class="err" style="display:none;"></div>
+        <button class="btn btn-primary" onclick="doLogin()" style="margin-top:4px;">Enter the Quest</button>
+      </div>
+
+      <p style="text-align:center;font-size:12px;color:var(--text-hint);margin-top:20px;line-height:1.6;">
+        AioKoa · Hirini Reedy · Aotearoa New Zealand · 2026<br>
+        hirinireedy@aiokoa.com
+      </p>
+    </div>
+  </div>
+</div>
+
+<!-- QUEST SCREEN -->
+<div id="screen-quest" class="screen">
+  <div class="topbar">
+    <div>
+      <div class="topbar-brand">AioKoa</div>
+      <div class="topbar-sub" id="tb-user"></div>
+    </div>
+    <div class="topbar-right">
+      <div style="text-align:right;">
+        <div style="font-size:11px;color:var(--text-muted);" id="tb-soul"></div>
+      </div>
+      <button class="btn" style="width:auto;padding:7px 12px;font-size:13px;margin:0;" onclick="doLogout()">Exit</button>
+    </div>
+  </div>
+
+  <div class="day-strip" id="day-strip"></div>
+
+  <div class="app" style="padding-top:16px;">
+    <div id="day-content"></div>
+    <div class="bottom-pad"></div>
+  </div>
+</div>
+
+<script>
+const DAYS = [
+  { n:1, title:'Kore Start', sub:'Ground Zero — establish your presence', star:'kore',
+    accent:'#888780', accentBg:'#F1EFE8', accentDark:'#444441',
+    breathTheme:'Ground and arrive',
+    breathDesc:'Settle. Feel your feet on the earth.',
+    journalQ:'Where am I truly standing right now — physically, emotionally, spiritually? What is my ground truth?',
+    practicesQ:'What grounding ritual, movement, or act brought you into your body today?',
+    sys:'You are AI Sensei, a wise and warm soul guide grounded in the AioKoa philosophy of Hirini Reedy — Sleeping Seed, Wild Flower. The participant is on Day 1: KORE Start — establishing their Ground Sole Print. Speak directly by first name. Be grounding, honest, and soul-centred. Stay inside AioKoa language only — no clinical terms. Keep response to 120 words max. No bullet points.',
+    special:'soul-name' },
+  { n:2, title:'Star Seer', sub:'Intel & Awareness — sense the unseen rhythms', star:'seer',
+    accent:'#7F77DD', accentBg:'#EEEDFE', accentDark:'#3C3489',
+    breathTheme:'Expand your inner sight',
+    breathDesc:'Let your senses open beyond the ordinary.',
+    journalQ:'What am I sensing or noticing that I usually overlook? What rhythms or signs is the world showing me?',
+    practicesQ:'Describe your Seer practice today — any moment of foresight, nature-reading, or expanded awareness.',
+    sys:'You are AI Sensei, soul guide grounded in AioKoa philosophy. The participant is working with Star Seer — Intel and Awareness. Speak directly by first name. Encourage their inner sight and sensing beyond the ordinary mind. Stay inside AioKoa language. 120 words max. No bullet points.' },
+  { n:3, title:'Star Warrior', sub:'Force & Protection — guard the flame', star:'warrior',
+    accent:'#D85A30', accentBg:'#FAECE7', accentDark:'#712B13',
+    breathTheme:'Ignite the warrior breath',
+    breathDesc:'Drive the exhale with the belly. Feel the heat rise.',
+    journalQ:'What must I protect, act on, or stand firm about right now? Where do my boundaries need strengthening?',
+    practicesQ:'Describe your Warrior practice today — any act of courage, boundary-setting, or fierce compassion.',
+    sys:'You are AI Sensei, soul guide grounded in AioKoa philosophy. The participant is working with Star Warrior — Force and Protection. Speak directly by first name. Honour their courage and call them to protect what matters. Stay inside AioKoa language. 120 words max. No bullet points.' },
+  { n:4, title:'Star Healer', sub:'Flow & Restoration — mend the breach', star:'healer',
+    accent:'#1D9E75', accentBg:'#E1F5EE', accentDark:'#085041',
+    breathTheme:'Breathe to restore and release',
+    breathDesc:'Let the exhale go without controlling it.',
+    journalQ:'What needs healing or releasing in me right now? What grief, old wound, or stagnant energy is ready to soften?',
+    practicesQ:'Describe your Healer practice today — any act of forgiveness, restoration, or compassionate release.',
+    sys:'You are AI Sensei, soul guide grounded in AioKoa philosophy. The participant is working with Star Healer — Flow and Restoration. Speak directly by first name. Be gentle and restorative. Support healing and release. Stay inside AioKoa language. 120 words max. No bullet points.' },
+  { n:5, title:'Star Provider', sub:'Form & Structure — manifest the light', star:'provider',
+    accent:'#378ADD', accentBg:'#E6F1FB', accentDark:'#0C447C',
+    breathTheme:'Breathe to build and sustain',
+    breathDesc:'Fill from the ground up — belly, ribs, chest.',
+    journalQ:'What must I create, build, or nourish right now? What is the legacy I am laying down?',
+    practicesQ:'Describe your Provider practice today — any act of building, nourishing, or creating for the new earth.',
+    sys:'You are AI Sensei, soul guide grounded in AioKoa philosophy. The participant is working with Star Provider — Form and Structure. Speak directly by first name. Encourage their creative and sustaining force. Star Provider is often the lowest-rated star and the highest-leverage growth point — name this honestly if relevant. Stay inside AioKoa language. 120 words max. No bullet points.' },
+  { n:6, title:'Soul Force Day', sub:'Integration — all stars become one', star:'soul',
+    accent:'#639922', accentBg:'#EAF3DE', accentDark:'#27500A',
+    breathTheme:'Full soul breath — all stars aligned',
+    breathDesc:'One breath round per star, then one for the Soul Core.',
+    journalQ:'Looking at all four stars — where is my Soul Force strongest? What is my Soul Core telling me now?',
+    practicesQ:'How are you integrating all four stars today? What does your unified Soul Force feel like in action?',
+    sys:'You are AI Sensei, soul guide grounded in AioKoa philosophy. The participant is on Day 6: Soul Force Integration Day. They have worked through all four stars. Speak directly by first name. Help them see the unified field of their Soul Force and Soul Core Radiance. Name the Star Provider gap clearly if it exists. Stay inside AioKoa language. 120 words max. No bullet points.',
+    showSummary:true },
+  { n:7, title:'Kore II', sub:'Rest, receive and reset', star:'kore', rest:true,
+    accent:'#888780', accentBg:'#F1EFE8', accentDark:'#444441' }
+];
+
+let ST = { user:null, apiKey:'', data:{} };
+
+function skey(u){ return 'aio_'+(u.first+'_'+u.last).toLowerCase().replace(/\s/g,'_'); }
+function load(u){ const r=localStorage.getItem(skey(u)); return r?JSON.parse(r):{days:{},soulName:''}; }
+function save(){ if(ST.user) localStorage.setItem(skey(ST.user),JSON.stringify(ST.data)); }
+
+function doLogin(){
+  const first=document.getElementById('fn').value.trim();
+  const last=document.getElementById('ln').value.trim();
+  const key=document.getElementById('api-key-input').value.trim();
+  const err=document.getElementById('login-err');
+  if(!first||!last){err.style.display='block';err.textContent='Please enter your first and last name.';return;}
+  err.style.display='none';
+  ST.user={first,last};
+  ST.apiKey=key;
+  ST.data=load(ST.user);
+  document.getElementById('tb-user').textContent=first+' '+last;
+  updateSoulLine();
+  showScreen('quest');
+  renderStrip();
+  renderDay(getCurrentDay());
+}
+
+function doLogout(){
+  save();
+  ST={user:null,apiKey:'',data:{}};
+  showScreen('login');
+  document.getElementById('fn').value='';
+  document.getElementById('ln').value='';
+  document.getElementById('api-key-input').value='';
+}
+
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById('screen-'+id).classList.add('active');
+  window.scrollTo(0,0);
+}
+
+function updateSoulLine(){
+  const el=document.getElementById('tb-soul');
+  el.textContent=ST.data.soulName?'✦ '+ST.data.soulName:'';
+}
+
+function getCurrentDay(){
+  for(let i=1;i<=7;i++){
+    if(!ST.data.days||!ST.data.days[i]||!ST.data.days[i].complete) return i;
+  }
+  return 7;
+}
+
+function renderStrip(){
+  const strip=document.getElementById('day-strip');
+  const cur=getCurrentDay();
+  const labels=['Kore','Seer','Warrior','Healer','Provider','Soul','Rest'];
+  strip.innerHTML='';
+  DAYS.forEach((d,i)=>{
+    const done=ST.data.days&&ST.data.days[d.n]&&ST.data.days[d.n].complete;
+    const locked=d.n>cur;
+    const div=document.createElement('div');
+    div.className='dp'+(done?' done':'')+(locked?' locked':'');
+    div.style.setProperty('--accent',d.accent);
+    div.innerHTML='<div class="dp-n">D'+d.n+'</div><div class="dp-s">'+labels[i]+'</div>';
+    if(!locked) div.onclick=()=>renderDay(d.n);
+    strip.appendChild(div);
+  });
+  updateActiveStrip(cur);
+}
+
+function updateActiveStrip(dayNum){
+  document.querySelectorAll('.dp').forEach((p,i)=>{
+    p.classList.toggle('active',i+1===dayNum);
+  });
+}
+
+let breathTimer=null;
+const BREATH=[
+  {label:'Inhale',dur:4000,expand:true},
+  {label:'Hold',dur:4000,expand:true},
+  {label:'Exhale',dur:6000,expand:false},
+  {label:'Hold',dur:2000,expand:false}
+];
+let bPhase=0,bCount=0;
+
+function startBreath(){
+  if(breathTimer){clearTimeout(breathTimer);breathTimer=null;}
+  bPhase=0;bCount=0;
+  nextBreath();
+}
+function nextBreath(){
+  const p=BREATH[bPhase%4];
+  const ring=document.getElementById('b-ring');
+  const pl=document.getElementById('b-phase');
+  const pd=document.getElementById('b-desc');
+  if(!ring)return;
+  if(p.expand) ring.classList.add('expand'); else ring.classList.remove('expand');
+  ring.textContent=p.label;
+  if(pl) pl.textContent=p.label;
+  if(pd) pd.textContent=p.dur/1000+'s · cycle '+(Math.floor(bCount/4)+1);
+  breathTimer=setTimeout(()=>{bPhase++;bCount++;nextBreath();},p.dur);
+}
+function stopBreath(){
+  if(breathTimer){clearTimeout(breathTimer);breathTimer=null;}
+  const ring=document.getElementById('b-ring');
+  if(ring){ring.classList.remove('expand');ring.textContent='Paused';}
+  const pl=document.getElementById('b-phase');
+  if(pl) pl.textContent='Paused';
+}
+
+function setRating(dayNum,n){
+  if(!ST.data.days) ST.data.days={};
+  if(!ST.data.days[dayNum]) ST.data.days[dayNum]={};
+  ST.data.days[dayNum].rating=n;
+  save();
+  document.querySelectorAll('.rb').forEach((b,i)=>{
+    b.classList.toggle('sel',i+1===n);
+  });
+}
+
+function saveField(dayNum,field,val){
+  if(!ST.data.days) ST.data.days={};
+  if(!ST.data.days[dayNum]) ST.data.days[dayNum]={};
+  ST.data.days[dayNum][field]=val;
+  save();
+}
+
+function saveSoulName(val){
+  ST.data.soulName=val;
+  save();
+  updateSoulLine();
+}
+
+function completeDay(n){
+  if(!ST.data.days) ST.data.days={};
+  if(!ST.data.days[n]) ST.data.days[n]={};
+  ST.data.days[n].complete=true;
+  save();
+  renderStrip();
+  if(n<7) renderDay(n+1);
+  else renderDay(7);
+}
+
+async function callSensei(n,sys){
+  const inp=document.getElementById('ai-inp');
+  const box=document.getElementById('ai-box');
+  const txt=inp?inp.value.trim():'';
+  if(!txt){if(box)box.innerHTML='<span class="ai-label">AI Sensei</span><span class="ai-thinking">Write something above first.</span>';return;}
+  if(!ST.apiKey){if(box)box.innerHTML='<span class="ai-label">AI Sensei</span><span class="ai-thinking">No API key found. Please log out and enter your key.</span>';return;}
+
+  const dd=(ST.data.days&&ST.data.days[n])||{};
+  const ctx=`Participant first name: ${ST.user.first}.${ST.data.soulName?' Soul name: '+ST.data.soulName+'.':''} ${dd.rating?'Star strength rating: '+dd.rating+'/10.':''} ${dd.journal?'Journal excerpt: "'+dd.journal.slice(0,250)+'"':''}`;
+  const fullSys=sys+' '+ctx;
+
+  if(box) box.innerHTML='<span class="ai-label">AI Sensei</span><span class="ai-thinking">Sensing...</span>';
+
+  try{
+    const res=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','x-api-key':ST.apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+      body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:300,system:fullSys,messages:[{role:'user',content:txt}]})
+    });
+    const data=await res.json();
+    if(data.error){if(box)box.innerHTML='<span class="ai-label">AI Sensei</span><span class="ai-thinking" style="color:#D85A30;">'+data.error.message+'</span>';return;}
+    const reply=data.content&&data.content[0]?data.content[0].text:'No response.';
+    if(box) box.innerHTML='<span class="ai-label">AI Sensei</span>'+reply.replace(/\n/g,'<br>');
+    saveField(n,'lastAi',reply);
+  }catch(e){
+    if(box) box.innerHTML='<span class="ai-label">AI Sensei</span><span class="ai-thinking" style="color:#D85A30;">Connection error. Check your API key and internet.</span>';
+  }
+}
+
+function renderDay(dayNum){
+  if(breathTimer){clearTimeout(breathTimer);breathTimer=null;}
+  updateActiveStrip(dayNum);
+  const day=DAYS[dayNum-1];
+  const dd=(ST.data.days&&ST.data.days[dayNum])||{};
+  const cur=getCurrentDay();
+  const locked=dayNum>cur;
+  const el=document.getElementById('day-content');
+
+  // Set CSS accent vars
+  el.style.setProperty('--accent',day.accent);
+  el.style.setProperty('--accent-bg',day.accentBg);
+  el.style.setProperty('--accent-dark',day.accentDark);
+
+  // Day 7 rest
+  if(day.rest){
+    el.innerHTML=`
+    <div class="rest-wrap">
+      <div class="rest-moon">☽</div>
+      <div class="rest-title">Kore II</div>
+      <p class="rest-body">Today is simply do nothing. Kore.<br><br>Rest, receive and reset.<br><br>Tomorrow is another day.</p>
+      ${!dd.complete?`<button class="btn btn-primary" style="max-width:280px;margin:28px auto 0;" onclick="completeDay(7)">Mark Quest Complete</button>`:`<div class="done-pill" style="max-width:280px;margin:28px auto 0;"><div class="done-dot"></div>Quest complete · Well done.</div>`}
+    </div>`;
+    return;
+  }
+
+  // Summary for Day 6
+  let summaryHtml='';
+  if(day.showSummary){
+    const stars=[{n:2,label:'Seer',c:'#7F77DD'},{n:3,label:'Warrior',c:'#D85A30'},{n:4,label:'Healer',c:'#1D9E75'},{n:5,label:'Provider',c:'#378ADD'}];
+    const ratings=stars.map(s=>(ST.data.days&&ST.data.days[s.n]&&ST.data.days[s.n].rating)||0);
+    const valid=ratings.filter(r=>r>0);
+    const avg=valid.length?(valid.reduce((a,b)=>a+b,0)/valid.length).toFixed(1):'—';
+    const cells=stars.map((s,i)=>`<div class="sc"><div class="sc-l" style="color:${s.c};">${s.label}</div><div class="sc-v" style="color:${s.c};">${ratings[i]||'—'}</div></div>`).join('');
+    const radCell=`<div class="sc" style="border-color:var(--soul);background:var(--soul-bg);"><div class="sc-l" style="color:var(--soul-dark);">Radiance</div><div class="sc-v" style="color:var(--soul);">${avg}</div></div>`;
+    const bars=stars.map((s,i)=>`<div class="bar-row"><span class="bar-label" style="color:${s.c};">${s.label}</span><div class="bar-track"><div class="bar-fill" style="width:${(ratings[i]||0)*10}%;background:${s.c};"></div></div><span class="bar-val" style="color:${s.c};">${ratings[i]||'—'}</span></div>`).join('');
+    summaryHtml=`
+    <div class="card">
+      <h3>Star Ratings</h3>
+      <div class="summary-grid">${cells}${radCell}</div>
+      <hr>
+      ${bars}
+    </div>`;
+  }
+
+  // Soul name field
+  let soulNameHtml='';
+  if(day.special==='soul-name'){
+    soulNameHtml=`
+    <div class="card card-accent">
+      <h3>Your Soul Name — Kore Initiation</h3>
+      <label>Write the name that comes from inside, not from the world. This is yours alone.</label>
+      <input type="text" class="soul-name-input" id="soul-inp" placeholder="My soul name is..." value="${ST.data.soulName||''}" oninput="saveSoulName(this.value)" />
+    </div>`;
+  }
+
+  // Rating buttons
+  const rv=dd.rating||0;
+  const rbtns=[1,2,3,4,5,6,7,8,9,10].map(n=>`<button class="rb${rv===n?' sel':''}" onclick="setRating(${dayNum},${n})">${n}</button>`).join('');
+
+  el.innerHTML=`
+  <div class="day-hero">
+    <span class="dh-badge">${day.title}</span>
+    <h2>${day.sub}</h2>
+    ${rv?`<div class="dh-meta"><div class="dh-rating-big">${rv}</div><div class="dh-rating-label">/ 10</div></div>`:''}
+    ${locked?'<p style="color:#D85A30;font-size:13px;margin-top:10px;">Complete earlier days to unlock this one.</p>':''}
+  </div>
+
+  <div class="card">
+    <h3>Guided Breath · ${day.breathTheme}</h3>
+    <div class="breath-wrap">
+      <div class="breath-ring" id="b-ring" style="border-color:${day.accent};color:${day.accent};">Ready</div>
+      <div class="breath-phase-label" id="b-phase" style="color:${day.accent};">4 · 4 · 6 · 2</div>
+      <div class="breath-phase-desc" id="b-desc">${day.breathDesc}</div>
+    </div>
+    <div class="breath-controls">
+      <button class="btn btn-accent" style="width:auto;padding:10px 20px;" onclick="startBreath()">▶ Start</button>
+      <button class="btn" style="width:auto;padding:10px 20px;" onclick="stopBreath()">⏸ Stop</button>
+    </div>
+  </div>
+
+  ${soulNameHtml}
+  ${summaryHtml}
+
+  <div class="card">
+    <h3>Star Strength Rating · 1 seed → 10 full bloom</h3>
+    <label>Rate your ${day.title} strength right now</label>
+    <div class="rating-grid">${rbtns}</div>
+  </div>
+
+  <div class="card">
+    <h3>Practices</h3>
+    <label>${day.practicesQ}</label>
+    <textarea id="ta-p" placeholder="Write your practices here..." oninput="saveField(${dayNum},'practices',this.value)">${dd.practices||''}</textarea>
+  </div>
+
+  <div class="card">
+    <h3>Daily Journal</h3>
+    <label>${day.journalQ}</label>
+    <textarea id="ta-j" placeholder="Write from your soul, not just your mind..." style="min-height:130px;" oninput="saveField(${dayNum},'journal',this.value)">${dd.journal||''}</textarea>
+  </div>
+
+  <div class="card">
+    <h3>AI Sensei</h3>
+    <label>Share something or ask a question — your AI Sensei will respond.</label>
+    <textarea id="ai-inp" placeholder="What would you like your AI Sensei to hear?" style="min-height:80px;"></textarea>
+    <button class="btn btn-accent" onclick="callSensei(${dayNum},${JSON.stringify(day.sys)})">✦ AI Sensei</button>
+    <div class="ai-box" id="ai-box">${dd.lastAi?`<span class="ai-label">AI Sensei · last response</span>${dd.lastAi.replace(/\n/g,'<br>')}`:'<span class="ai-label">AI Sensei</span><span class="ai-thinking" style="font-style:normal;font-size:14px;color:var(--text-hint);">Write above and tap AI Sensei to begin.</span>'}</div>
+  </div>
+
+  ${!locked?`
+  <div style="margin-top:4px;">
+    ${dd.complete
+      ?`<div class="done-pill"><div class="done-dot" style="background:${day.accent};"></div>Day ${dayNum} complete</div>`
+      :`<button class="btn btn-primary" onclick="completeDay(${dayNum})">Mark Day ${dayNum} Complete</button>`
+    }
+  </div>`:''}
+  `;
+
+  window.scrollTo(0,0);
+}
+
+// Enter key on login
+document.getElementById('fn').addEventListener('keydown',e=>{if(e.key==='Enter')document.getElementById('ln').focus();});
+document.getElementById('ln').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
+</script>
+</body>
+</html>
